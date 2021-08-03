@@ -5,7 +5,7 @@ Image* create_image() {
     Image* new_img = (Image*)malloc(sizeof(Image));
     new_img->width = 0;
     new_img->height = 0;
-    new_img->row_pointers = NULL; // é alocado apos receber as dimensoes da imagem na função read_img
+    new_img->row_pointers = NULL; // e alocado apos receber as dimensoes da imagem na funcao read_img
     return new_img;
 }
 
@@ -40,7 +40,7 @@ void read_img(char* filename, Image* img) {
     if (img->bit_depth == 16)
         png_set_strip_16(png);
 
-    // definiçoes da paleta de cors
+    // definiï¿½oes da paleta de cors
     if (img->color_type == PNG_COLOR_TYPE_PALETTE)
         png_set_palette_to_rgb(png);
 
@@ -56,11 +56,11 @@ void read_img(char* filename, Image* img) {
     if (img->color_type == PNG_COLOR_TYPE_GRAY || img->color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
         png_set_gray_to_rgb(png);
 
-    // atualiza definiçoes
+    // atualiza definiï¿½oes
     png_read_update_info(png, info);
 
     // aloca ponteiro para colunas
-    if (img->row_pointers) exit(1); // se o ponteiro para colunas não entiver vazio
+    if (img->row_pointers) exit(1); // se o ponteiro para colunas nï¿½o entiver vazio
     img->row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * img->height);
     for (int y = 0; y < img->height; y++) {
         img->row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png, info));
@@ -107,18 +107,30 @@ void normalize_img(Image* img) {
         png_bytep row = img->row_pointers[y];
         for (int x = 0; x < img->width; x++) {
             png_bytep px = &(row[x * 4]);
-            // verifica se é vermelho ou azul
+            // verifica se e vermelho ou azul
             if ((px[0] > 100 && px[1] < 80 && px[2] < 80) || (px[2] > 100 && px[1] < 80 && px[0] < 80)) {
                 px[0] = 0; px[1] = 255; px[2] = 0;
             }
-            // verifica se é preto
+            // verifica se e preto
             else if (px[0] < 130 && px[1] < 130 && px[2] < 130) {
                 px[0] = 0; px[1] = 0; px[2] = 0;
             }
-            // se não for preto, vermelho ou azul preenche com branco
+            // se nao for preto, vermelho ou azul preenche com branco
             else {
                 px[0] = 255; px[1] = 255; px[2] = 255;
             }
         }
+    }
+}
+
+//____________________________________________________________________________________________
+void draw_path(Image* img, Stack* path) {
+    Stack* aux = pop(path);
+    while(aux != NULL){
+        Point coord = aux->coord;
+        png_bytep py = img->row_pointers[coord.y];
+        png_bytep px = &(py[coord.x * 4]);
+        px[0] = 0; px[1] = 255; px[2] = 0;
+        aux = aux->next;
     }
 }
