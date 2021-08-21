@@ -1,11 +1,15 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <png.h>
-#include "stack.h"
+#include "estruturas.h"
+
+#ifndef IMAGE_H
+#define IMAGE_H
+
+#define END 99
 
 typedef struct _image {
     int width;
     int height;
+    int **matrix;
     png_byte color_type;
     png_byte bit_depth;
     png_bytep* row_pointers;
@@ -29,3 +33,5 @@ void normalize_img(Image* img);
 
 /* Desenha o caminho do labirinto */
 void draw_path(Image* img, Stack* path);
+
+#endif

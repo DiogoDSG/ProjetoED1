@@ -1,8 +1,9 @@
-#include "Image.h"
+#include "labirinto.h"
+
 int main() {
     // inicia imagem
     Image* img = create_image();
-    read_img("labirinto.png", img);
+    read_img("teste.png", img);
 
     // normaliza e salva a matrix com o labirinto
     normalize_img(img);
@@ -11,9 +12,7 @@ int main() {
     write_img("resultado.png", img);
 
     Stack* path = create_stack();
-    path = fill(path);
-    draw_path(img, path);
-    write_img("caminho.png", img);
+    pathFind(img, path);
     destroy_image(img);
 
     return 0;

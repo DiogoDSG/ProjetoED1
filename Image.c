@@ -6,6 +6,7 @@ Image* create_image() {
     new_img->width = 0;
     new_img->height = 0;
     new_img->row_pointers = NULL; // e alocado apos receber as dimensoes da imagem na funcao read_img
+    new_img->matrix = NULL;
     return new_img;
 }
 
@@ -66,6 +67,11 @@ void read_img(char* filename, Image* img) {
         img->row_pointers[y] = (png_byte*)malloc(png_get_rowbytes(png, info));
     }
 
+    // aloca espaço para matriz normalizada
+    img->matrix = (int**)malloc(img->height * sizeof(int*));
+    for(int i = 0; i < img->height; i++)
+        img->matrix[i] = (int*)malloc(img->width * sizeof(int));
+
     // inicia ponteiro para colunas
     png_read_image(png, img->row_pointers);
     fclose(fp);
@@ -108,16 +114,19 @@ void normalize_img(Image* img) {
         for (int x = 0; x < img->width; x++) {
             png_bytep px = &(row[x * 4]);
             // verifica se e vermelho ou azul
-            if ((px[0] > 100 && px[1] < 80 && px[2] < 80) || (px[2] > 100 && px[1] < 80 && px[0] < 80)) {
+            if ((px[0] > 100 && px[1] <80 && px[2] < 80) || (px[2] > 100 && px[1] < 80 && px[0] < 80)) {
                 px[0] = 0; px[1] = 255; px[2] = 0;
+                img->matrix[x][y] = END;
             }
             // verifica se e preto
             else if (px[0] < 130 && px[1] < 130 && px[2] < 130) {
                 px[0] = 0; px[1] = 0; px[2] = 0;
+                img->matrix[x][y] = 1;
             }
             // se nao for preto, vermelho ou azul preenche com branco
             else {
                 px[0] = 255; px[1] = 255; px[2] = 255;
+                img->matrix[x][y] = 0;
             }
         }
     }
@@ -130,7 +139,7 @@ void draw_path(Image* img, Stack* path) {
         Point coord = aux->coord;
         png_bytep py = img->row_pointers[coord.y];
         png_bytep px = &(py[coord.x * 4]);
-        px[0] = 0; px[1] = 255; px[2] = 0;
+        px[0] = 0; px[1] = 0; px[2] = 255;
         aux = aux->next;
     }
 }
